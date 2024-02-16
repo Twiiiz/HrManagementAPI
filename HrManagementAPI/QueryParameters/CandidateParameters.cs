@@ -9,6 +9,6 @@ namespace HrManagementAPI.QueryParameters
 
         public string? last_name { get; set; }
 
-        public string? status { get; set; }
+        public CandidateStatus? status { get; set; }
     }
 }

@@ -159,5 +159,32 @@ namespace HrManagementAPI.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(CreateSubmission), new_submission);
         }
+
+        [HttpPost]
+        [Route("statuses/add")]
+        public async Task<IActionResult> CreateSubmissionStatus([FromBody] SubmissionStatus new_sub_status)
+        {
+            _context.SubmissionStatuses.Add(new_sub_status);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(CreateSubmission), new_sub_status);
+        }
+
+        [HttpPost]
+        [Route("skills/add")]
+        public async Task<IActionResult> CreateSubmissionSkill([FromBody] SubmissionSkill new_sub_skill)
+        {
+            _context.SubmissionSkills.Add(new_sub_skill);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(CreateSubmission), new_sub_skill);
+        }
+
+        [HttpPost]
+        [Route("notes/add")]
+        public async Task<IActionResult> CreateSubmissionNote([FromBody] Note new_note)
+        {
+            _context.Notes.Add(new_note);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(CreateSubmission), new_note);
+        }
     }
 }

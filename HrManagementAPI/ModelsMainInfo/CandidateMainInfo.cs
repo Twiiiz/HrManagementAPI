@@ -1,14 +1,13 @@
 ﻿using HrManagementAPI.Types;
+using System.Text.Json.Serialization;
 
 namespace HrManagementAPI.ModelsMainInfo
 {
     public class CandidateMainInfo
     {
-        public int CandidateId { get; set; }
+        public required string FirstName { get; set; }
 
-        public string FirstName { get; set; } = null!;
-
-        public string LastName { get; set; } = null!;
+        public required string LastName { get; set; }
 
         public DateOnly? BirthDate { get; set; }
 
@@ -16,6 +15,6 @@ namespace HrManagementAPI.ModelsMainInfo
 
         public string? Email { get; set; }
 
-        public CandidateStatus Status { get; set; }
+        public required CandidateStatus Status { get; set; }
     }
 }
