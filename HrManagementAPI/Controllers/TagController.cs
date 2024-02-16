@@ -15,6 +15,19 @@ namespace HrManagementAPI.Controllers
 
         public TagController(HrManagementContext context) => _context = context;
 
+        private Tag? GetTagHelper(int hr_id, int tag_id)
+        {
+            var tags = _context.Tags
+                .Include(t => t.TagSubmissions)
+                .Where(x => x.HrId == hr_id).AsQueryable();
+
+            var tag = tags
+                .Where(x => x.TagId == tag_id)
+                .FirstOrDefault();
+
+            return tag;
+        }
+        
         [HttpGet]
         [Route("{hr_id}")]
         public async Task<IActionResult> GetTags([FromRoute] int hr_id)
@@ -35,9 +48,7 @@ namespace HrManagementAPI.Controllers
         [Route("{hr_id}/{tag_id}")]
         public async Task<IActionResult> GetTag([FromRoute] int hr_id, [FromRoute] int tag_id)
         {
-            var tags = _context.Tags
-                .Include(t => t.TagSubmissions)
-                .Where(x => x.HrId == hr_id).AsQueryable();
+            var tags = _context.Tags.Where(x => x.HrId == hr_id).AsQueryable();
             if (!tags.Any())
                 return NotFound("Provided Hr Manager doesn't have any tags created");
 
@@ -56,21 +67,20 @@ namespace HrManagementAPI.Controllers
         [Route("{hr_id}/{tag_id}/submissions")]
         public async Task<IActionResult> GetTagSubmissions([FromRoute] int hr_id, [FromRoute] int tag_id)
         {
-            var action_result = await GetTag(hr_id, tag_id);
-
-            if (action_result is OkObjectResult ok_object_result) // when if - success => ok_object_result = action_result
+            var tag = GetTagHelper(hr_id, tag_id);
+            if (tag != null)
             {
-                var tag = ok_object_result.Value as Tag;
-
                 var tag_submissions = await _context.TagSubmissions
                     .Include(s => s.Tag)
                     .Include(s => s.Sub)
                     .Where(x => x.TagId == tag.TagId)
                     .ToListAsync();
+                if (!tag_submissions.Any())
+                    return NoContent();
 
                 return Ok(tag_submissions);
             }
-            else return NotFound("Unable to find requested tag, or it's not assigned to provided hr manager");
+            else return BadRequest("Provided submission was not found for provided Hr Manager");
         }
 
         [HttpPost]
