@@ -14,6 +14,5 @@ public partial class Note
 
     public DateOnly NoteDate { get; set; }
 
-    [JsonIgnore]
     public virtual CandidateSubmission Sub { get; set; } = null!;
 }

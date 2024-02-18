@@ -1,9 +1,9 @@
 ﻿using HrManagementAPI.Types;
 using System.Text.Json.Serialization;
 
-namespace HrManagementAPI.ModelsMainInfo
+namespace HrManagementAPI.DTOs
 {
-    public class CandidateMainInfo
+    public class DtoCreateCandidate
     {
         public required string FirstName { get; set; }
 

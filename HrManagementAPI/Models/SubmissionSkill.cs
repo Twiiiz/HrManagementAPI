@@ -14,6 +14,5 @@ public partial class SubmissionSkill
 
     public string? Description { get; set; }
 
-    [JsonIgnore]
     public virtual CandidateSubmission Sub { get; set; } = null!;
 }

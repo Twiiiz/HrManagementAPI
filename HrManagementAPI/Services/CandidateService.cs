@@ -1,5 +1,5 @@
-﻿using HrManagementAPI.Models;
-using HrManagementAPI.ModelsMainInfo;
+﻿using HrManagementAPI.DTOs;
+using HrManagementAPI.Models;
 using HrManagementAPI.QueryParameters;
 using HrManagementAPI.Types;
 using Microsoft.EntityFrameworkCore;
@@ -8,121 +8,116 @@ namespace HrManagementAPI.Repositories
 {
     public class CandidateService: ICandidateService
     {
+        private readonly Mapper _mapper;
         private readonly HrManagementContext _context;
 
         public CandidateService(HrManagementContext context)
         {
             _context = context;
+            _mapper = new Mapper();
         }
 
-        public async Task<List<Candidate>> GetCandidatesAsync(CandidateParameters candidate_parameters)
+        public async Task<List<DtoCandidate>> GetCandidatesAsync(CandidateParameters candidateParameters)
         {
             var candidates = _context.Candidates.AsQueryable();
 
-            if (candidates.Any())
-            {
-                if (!string.IsNullOrEmpty(candidate_parameters.first_name))
-                    candidates = candidates.Where(x => x.FirstName.ToLower() == candidate_parameters.first_name.ToLower());
+            if (!string.IsNullOrEmpty(candidateParameters.first_name))
+                candidates = candidates.Where(x => x.FirstName == candidateParameters.first_name);
 
-                if (!string.IsNullOrEmpty(candidate_parameters.last_name))
-                    candidates = candidates.Where(x => x.LastName.ToLower() == candidate_parameters.last_name.ToLower());
+            if (!string.IsNullOrEmpty(candidateParameters.last_name))
+                candidates = candidates.Where(x => x.LastName == candidateParameters.last_name);
 
-                if (candidate_parameters.status != null)
-                {
-                    var status = candidate_parameters.status;
+            if (candidateParameters.status != null)
+                candidates = candidates.Where(x => x.Status == candidateParameters.status);
 
-                    switch (status)
-                    {
-                        case CandidateStatus.hired:
-                            candidates = candidates.Where(x => x.Status == CandidateStatus.hired);
-
-                            break;
-
-                        case CandidateStatus.not_hired:
-                            candidates = candidates.Where(x => x.Status == CandidateStatus.not_hired);
-
-                            break;
-
-                        case CandidateStatus.offer_made:
-                            candidates = candidates.Where(x => x.Status == CandidateStatus.offer_made);
-
-                            break;
-
-                        case CandidateStatus.offer_denied:
-                            candidates = candidates.Where(x => x.Status == CandidateStatus.offer_denied);
-
-                            break;
-
-                        case CandidateStatus.spam:
-                            candidates = candidates.Where(x => x.Status == CandidateStatus.spam);
-
-                            break;
-                    }
-                }
-            }
-
-            return await candidates.ToListAsync();
+            return await candidates.Select(x => _mapper.CandidateToDto(x)).ToListAsync();
         }
 
-        public async Task<Candidate> GetCandidateByIdAsync(int candidate_id)
+        public async Task<DtoCandidate> GetCandidateByIdAsync(int candidateId)
         {
             return await _context.Candidates
-                .Where(x => x.CandidateId == candidate_id)
+                .Where(x => x.CandidateId == candidateId)
+                .Select(x => _mapper.CandidateToDto(x))
                 .AsQueryable()
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Candidate> AddCandidate(CandidateMainInfo candidate_info)
+        public async Task<DtoCandidate> AddCandidate(DtoCreateCandidate candidateInfo)
         {
-            Candidate new_candidate = new Candidate()
+            if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
+                                               x.LastName == candidateInfo.LastName &&
+                                               x.BirthDate == candidateInfo.BirthDate &&
+                                               x.PhoneNumber == candidateInfo.PhoneNumber &&
+                                               x.Email == candidateInfo.Email &&
+                                               x.Status == candidateInfo.Status).SingleOrDefault() != null)
             {
-                CandidateId = default,
-                FirstName = candidate_info.FirstName,
-                LastName = candidate_info.LastName,
-                BirthDate = candidate_info.BirthDate,
-                PhoneNumber = candidate_info.PhoneNumber,
-                Email = candidate_info.Email,
-                Status = (CandidateStatus)candidate_info.Status
-            };
-
-            _context.Candidates.Add(new_candidate);
-
-            await _context.SaveChangesAsync();
-
-            return new_candidate;
-        }
-
-        public async Task<Candidate> UpdateCandidate(int candidate_id, CandidateMainInfo candidate_info)
-        {
-            var candidate = await _context.Candidates.Where(x => x.CandidateId == candidate_id).FirstOrDefaultAsync();
-            if (candidate == null)
-            {
-                throw new ArgumentException("Candidate not found", nameof(candidate_id));
+                throw new ArgumentException("Candidate with identical data already exists");
             }
             else
             {
-                candidate.FirstName = candidate_info.FirstName;
-                candidate.LastName = candidate_info.LastName;
-                candidate.BirthDate = candidate_info.BirthDate;
-                candidate.PhoneNumber = candidate_info.PhoneNumber;
-                candidate.Email = candidate_info.Email;
-                candidate.Status = (CandidateStatus)candidate_info.Status;
+                if (!string.IsNullOrEmpty(candidateInfo.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).SingleOrDefault() != null)
+                {
+                    throw new ArgumentException("Entered email is already assigned to a candidate");
+                }
+                if (!string.IsNullOrEmpty(candidateInfo.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).SingleOrDefault() != null)
+                {
+                    throw new ArgumentException("Entered phone number is already assigned to a candidate");
+                }
 
+                Candidate newCandidate = _mapper.DtoToCandidate(candidateInfo);
+                _context.Candidates.Add(newCandidate);
                 await _context.SaveChangesAsync();
 
-                return (candidate);
+                return _mapper.CandidateToDto(newCandidate);
             }
         }
 
-        public async Task<bool> DeleteCandidate(int candidate_id)
+        public async Task<DtoCandidate> UpdateCandidate(int candidateId, DtoCreateCandidate candidateInfo)
         {
-            var candidate = await _context.Candidates.Where(x => x.CandidateId == candidate_id).FirstOrDefaultAsync();
+            var candidate = await _context.Candidates.Where(x => x.CandidateId == candidateId).SingleOrDefaultAsync();
             if (candidate == null)
-                return false;
+            {
+                throw new ArgumentException("Candidate not found", nameof(candidateId));
+            }
+            else if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
+                                               x.LastName == candidateInfo.LastName &&
+                                               x.BirthDate == candidateInfo.BirthDate &&
+                                               x.PhoneNumber == candidateInfo.PhoneNumber &&
+                                               x.Email == candidateInfo.Email &&
+                                               x.Status == candidateInfo.Status).SingleOrDefault() != null)
+            {
+                throw new ArgumentException("Candidate with identical data already exists");
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(candidate.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).SingleOrDefault() != null)
+                {
+                    throw new ArgumentException("Entered email is already assigned to a candidate");
+                }
+                if (!string.IsNullOrEmpty(candidate.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).SingleOrDefault() != null)
+                {
+                    throw new ArgumentException("Entered phone number is already assigned to a candidate");
+                }
 
-            _context.Candidates.Remove(_context.Candidates.First(x => x.CandidateId == candidate_id));
+                candidate.FirstName = candidateInfo.FirstName;
+                candidate.LastName = candidateInfo.LastName;
+                candidate.BirthDate = candidateInfo.BirthDate;
+                candidate.PhoneNumber = candidateInfo.PhoneNumber;
+                candidate.Email = candidateInfo.Email;
+                candidate.Status = candidateInfo.Status;
+
+                var rowCount = await _context.SaveChangesAsync();
+                if (rowCount > 0)
+                    return (_mapper.CandidateToDto(candidate));
+                else
+                    throw new DbUpdateException("Unable to update the candidate");
+            }
+        }
+
+        public async Task DeleteCandidate(int candidateId)
+        {
+            _context.Candidates.Remove(_context.Candidates.First(x => x.CandidateId == candidateId));
             await _context.SaveChangesAsync();
-            return true;
         }
     }
 }

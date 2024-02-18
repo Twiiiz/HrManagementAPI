@@ -1,19 +1,19 @@
 ﻿using HrManagementAPI.Models;
-using HrManagementAPI.ModelsMainInfo;
+using HrManagementAPI.DTOs;
 using HrManagementAPI.QueryParameters;
 
 namespace HrManagementAPI.Repositories
 {
     public interface ICandidateService
     {
-        public Task<List<Candidate>> GetCandidatesAsync(CandidateParameters candidate_parameters);
+        public Task<List<DtoCandidate>> GetCandidatesAsync(CandidateParameters candidateParameters);
 
-        public Task<Candidate> GetCandidateByIdAsync(int candidate_id);
+        public Task<DtoCandidate> GetCandidateByIdAsync(int candidateId);
 
-        public Task<Candidate> AddCandidate(CandidateMainInfo new_candidate);
+        public Task<DtoCandidate> AddCandidate(DtoCreateCandidate newCandidate);
 
-        public Task<Candidate> UpdateCandidate(int candidate_id, CandidateMainInfo upd_candidate);
+        public Task<DtoCandidate> UpdateCandidate(int candidateId, DtoCreateCandidate updCandidate);
 
-        public Task<bool> DeleteCandidate(int candidate_id);
+        public Task DeleteCandidate(int candidateId);
     }
 }

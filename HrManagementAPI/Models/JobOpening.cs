@@ -11,16 +11,12 @@ public partial class JobOpening
 
     public int? OfficeId { get; set; }
 
-    [JsonRequired]
     public int PositionId { get; set; }
 
-    [JsonRequired]
     public DateOnly OpeningDate { get; set; }
 
-    [JsonRequired]
     public DateOnly LastUpdateDate { get; set; }
 
-    [JsonRequired]
     public OpeningStatus Status { get; set; }
 
     public int? HiredCandidate { get; set; }

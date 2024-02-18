@@ -14,6 +14,5 @@ public partial class EmployeeSkill
 
     public string? Description { get; set; }
 
-    [JsonIgnore]
     public virtual Employee? Employee { get; set; }
 }

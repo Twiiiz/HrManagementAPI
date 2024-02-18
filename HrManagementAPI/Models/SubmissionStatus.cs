@@ -14,6 +14,5 @@ public partial class SubmissionStatus
 
     public DateOnly StatusDate { get; set; }
 
-    [JsonIgnore]
     public virtual CandidateSubmission Sub { get; set; } = null!;
 }
