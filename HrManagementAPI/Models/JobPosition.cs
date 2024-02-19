@@ -1,5 +1,4 @@
-﻿using HrManagementAPI.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace HrManagementAPI.Models;

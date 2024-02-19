@@ -1,4 +1,4 @@
-﻿namespace HrManagementAPI.QueryParameters
+﻿namespace HrManagementAPI.Models.RootParameters
 {
     public class SubmissionStatusParameters
     {

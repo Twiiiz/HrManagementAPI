@@ -1,5 +1,4 @@
 ﻿using HrManagementAPI.Models;
-using HrManagementAPI.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

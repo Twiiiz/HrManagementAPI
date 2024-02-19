@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace HrManagementAPI.Types
+namespace HrManagementAPI.Models
 {
     public enum CandidateStatus
     {

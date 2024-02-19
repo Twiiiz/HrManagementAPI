@@ -1,6 +1,6 @@
 ﻿using HrManagementAPI.Models;
 using HrManagementAPI.DTOs;
-using HrManagementAPI.QueryParameters;
+using HrManagementAPI.Models.RootParameters;
 
 namespace HrManagementAPI.Repositories
 {
@@ -10,10 +10,10 @@ namespace HrManagementAPI.Repositories
 
         public Task<DtoCandidate> GetCandidateByIdAsync(int candidateId);
 
-        public Task<DtoCandidate> AddCandidate(DtoCreateCandidate newCandidate);
+        public Task<DtoCandidate> AddCandidateAsync(DtoCandidateCreate newCandidate);
 
-        public Task<DtoCandidate> UpdateCandidate(int candidateId, DtoCreateCandidate updCandidate);
+        public Task<DtoCandidate> UpdateCandidateAsync(int candidateId, DtoCandidateCreate updCandidate);
 
-        public Task DeleteCandidate(int candidateId);
+        public Task DeleteCandidateAsync(int candidateId);
     }
 }

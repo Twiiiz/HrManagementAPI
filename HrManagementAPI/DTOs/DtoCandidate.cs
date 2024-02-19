@@ -1,4 +1,4 @@
-﻿using HrManagementAPI.Types;
+﻿using HrManagementAPI.Models;
 
 namespace HrManagementAPI.DTOs
 {

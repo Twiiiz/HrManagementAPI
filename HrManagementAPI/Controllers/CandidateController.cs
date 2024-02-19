@@ -1,13 +1,12 @@
 ﻿using HrManagementAPI.Models;
 using HrManagementAPI.DTOs;
-using HrManagementAPI.QueryParameters;
 using HrManagementAPI.Repositories;
-using HrManagementAPI.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Npgsql;
+using HrManagementAPI.Models.RootParameters;
 
 namespace HrManagementAPI.Controllers
 {
@@ -34,25 +33,25 @@ namespace HrManagementAPI.Controllers
         {
             var candidate = await _candidateService.GetCandidateByIdAsync(candidate_id);
             if (candidate == null)
-                return BadRequest("Requested candidate doesn't exist");
+                return NotFound("Requested candidate doesn't exist");
 
             return Ok(candidate);
         }
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateCandidate([FromBody] DtoCreateCandidate candidateInfo)
+        public async Task<IActionResult> CreateCandidate([FromBody] DtoCandidateCreate candidateInfo)
         {
-            var newCandidate = await _candidateService.AddCandidate(candidateInfo);
+            var newCandidate = await _candidateService.AddCandidateAsync(candidateInfo);
 
-            return CreatedAtAction(nameof(newCandidate.CandidateId), newCandidate);
+            return CreatedAtAction(nameof(GetCandidate), new { id = newCandidate.CandidateId }, newCandidate);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> ReplaceCandidate([FromRoute(Name = "id")] int candidateId, [FromBody] DtoCreateCandidate replacement)
+        public async Task<IActionResult> ReplaceCandidate([FromRoute(Name = "id")] int candidateId, [FromBody] DtoCandidateCreate replacement)
         {
-            var updCandidate = await _candidateService.UpdateCandidate(candidateId, replacement);
+            var updCandidate = await _candidateService.UpdateCandidateAsync(candidateId, replacement);
 
             return Ok(updCandidate);
         }
@@ -61,7 +60,7 @@ namespace HrManagementAPI.Controllers
         [Route("{id}")]
         public async Task<IActionResult> DeleteCandidate([FromRoute(Name = "id")] int candidateId)
         {
-            await _candidateService.DeleteCandidate(candidateId);
+            await _candidateService.DeleteCandidateAsync(candidateId);
 
             return Ok("Candidate was deleted");
         }

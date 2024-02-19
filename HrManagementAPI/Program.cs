@@ -2,6 +2,7 @@
 using HrManagementAPI.Middleware;
 using HrManagementAPI.Models;
 using HrManagementAPI.Repositories;
+using HrManagementAPI.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ namespace HrManagementAPI
 
             // Add services to the container.
             builder.Services.AddScoped<ICandidateService, CandidateService>();
+            builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 
             //builder.Services.AddControllers();
             builder.Services.AddControllers().AddJsonOptions(options =>

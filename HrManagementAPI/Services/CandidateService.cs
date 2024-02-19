@@ -1,8 +1,7 @@
 ﻿using HrManagementAPI.DTOs;
 using HrManagementAPI.Mappers;
 using HrManagementAPI.Models;
-using HrManagementAPI.QueryParameters;
-using HrManagementAPI.Types;
+using HrManagementAPI.Models.RootParameters;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -23,14 +22,14 @@ namespace HrManagementAPI.Repositories
         {
             var candidates = _context.Candidates.AsQueryable();
 
-            if (!string.IsNullOrEmpty(candidateParameters.first_name))
-                candidates = candidates.Where(x => x.FirstName == candidateParameters.first_name);
+            if (!string.IsNullOrEmpty(candidateParameters.FirstName))
+                candidates = candidates.Where(x => x.FirstName == candidateParameters.FirstName);
 
-            if (!string.IsNullOrEmpty(candidateParameters.last_name))
-                candidates = candidates.Where(x => x.LastName == candidateParameters.last_name);
+            if (!string.IsNullOrEmpty(candidateParameters.LastName))
+                candidates = candidates.Where(x => x.LastName == candidateParameters.LastName);
 
-            if (candidateParameters.status != null)
-                candidates = candidates.Where(x => x.Status == candidateParameters.status);
+            if (candidateParameters.Status != null)
+                candidates = candidates.Where(x => x.Status == candidateParameters.Status);
 
             return await candidates.Select(x => _mapper.CandidateToDto(x)).ToListAsync();
         }
@@ -44,14 +43,9 @@ namespace HrManagementAPI.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<DtoCandidate> AddCandidate(DtoCreateCandidate candidateInfo)
+        public async Task<DtoCandidate> AddCandidateAsync(DtoCandidateCreate candidateInfo)
         {
-            if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
-                                               x.LastName == candidateInfo.LastName &&
-                                               x.BirthDate == candidateInfo.BirthDate &&
-                                               x.PhoneNumber == candidateInfo.PhoneNumber &&
-                                               x.Email == candidateInfo.Email &&
-                                               x.Status == candidateInfo.Status).FirstOrDefault() != null)
+            if (!await IsUnique(candidateInfo))
             {
                 throw new ArgumentException("Candidate with identical data already exists");
             }
@@ -72,7 +66,7 @@ namespace HrManagementAPI.Repositories
             return _mapper.CandidateToDto(newCandidate);
         }
 
-        public async Task<DtoCandidate> UpdateCandidate(int candidateId, DtoCreateCandidate candidateInfo)
+        public async Task<DtoCandidate> UpdateCandidateAsync(int candidateId, DtoCandidateCreate candidateInfo)
         {
             var candidate = await _context.Candidates.Where(x => x.CandidateId == candidateId).FirstOrDefaultAsync();
             if (candidate == null)
@@ -80,12 +74,7 @@ namespace HrManagementAPI.Repositories
                 throw new ArgumentException("Candidate not found", nameof(candidateId));
             }
 
-            if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
-                                               x.LastName == candidateInfo.LastName &&
-                                               x.BirthDate == candidateInfo.BirthDate &&
-                                               x.PhoneNumber == candidateInfo.PhoneNumber &&
-                                               x.Email == candidateInfo.Email &&
-                                               x.Status == candidateInfo.Status).SingleOrDefault() != null)
+            if (!await IsUnique(candidateInfo))
             {
                 throw new ArgumentException("Candidate with identical data already exists");
             }
@@ -106,15 +95,29 @@ namespace HrManagementAPI.Repositories
             candidate.Email = candidateInfo.Email;
             candidate.Status = candidateInfo.Status;
 
-            var rowCount = await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-            return (_mapper.CandidateToDto(candidate));
+            return _mapper.CandidateToDto(candidate);
         }
 
-        public async Task DeleteCandidate(int candidateId)
+        public async Task DeleteCandidateAsync(int candidateId)
         {
             _context.Candidates.Remove(_context.Candidates.First(x => x.CandidateId == candidateId));
             await _context.SaveChangesAsync();
+        }
+
+        private async Task<bool> IsUnique(DtoCandidateCreate entryCandidate)
+        {
+            var candidate = await _context.Candidates.Where(x => x.FirstName == entryCandidate.FirstName &&
+                                               x.LastName == entryCandidate.LastName &&
+                                               x.BirthDate == entryCandidate.BirthDate &&
+                                               x.PhoneNumber == entryCandidate.PhoneNumber &&
+                                               x.Email == entryCandidate.Email &&
+                                               x.Status == entryCandidate.Status).FirstOrDefaultAsync();
+            if (candidate != null)
+                return false;
+
+            return true;
         }
     }
 }
