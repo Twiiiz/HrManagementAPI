@@ -2,7 +2,7 @@
 using HrManagementAPI.Models;
 using System.Security.Cryptography.X509Certificates;
 
-namespace HrManagementAPI
+namespace HrManagementAPI.Mappers
 {
     public class Mapper
     {

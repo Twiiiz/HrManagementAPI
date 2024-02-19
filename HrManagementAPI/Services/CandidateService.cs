@@ -1,8 +1,10 @@
 ﻿using HrManagementAPI.DTOs;
+using HrManagementAPI.Mappers;
 using HrManagementAPI.Models;
 using HrManagementAPI.QueryParameters;
 using HrManagementAPI.Types;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace HrManagementAPI.Repositories
 {
@@ -49,37 +51,36 @@ namespace HrManagementAPI.Repositories
                                                x.BirthDate == candidateInfo.BirthDate &&
                                                x.PhoneNumber == candidateInfo.PhoneNumber &&
                                                x.Email == candidateInfo.Email &&
-                                               x.Status == candidateInfo.Status).SingleOrDefault() != null)
+                                               x.Status == candidateInfo.Status).FirstOrDefault() != null)
             {
                 throw new ArgumentException("Candidate with identical data already exists");
             }
-            else
+
+            if (!string.IsNullOrEmpty(candidateInfo.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).FirstOrDefault() != null)
             {
-                if (!string.IsNullOrEmpty(candidateInfo.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).SingleOrDefault() != null)
-                {
-                    throw new ArgumentException("Entered email is already assigned to a candidate");
-                }
-                if (!string.IsNullOrEmpty(candidateInfo.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).SingleOrDefault() != null)
-                {
-                    throw new ArgumentException("Entered phone number is already assigned to a candidate");
-                }
-
-                Candidate newCandidate = _mapper.DtoToCandidate(candidateInfo);
-                _context.Candidates.Add(newCandidate);
-                await _context.SaveChangesAsync();
-
-                return _mapper.CandidateToDto(newCandidate);
+                throw new ArgumentException("Entered email is already assigned to a candidate");
             }
+            if (!string.IsNullOrEmpty(candidateInfo.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).FirstOrDefault() != null)
+            {
+                throw new ArgumentException("Entered phone number is already assigned to a candidate");
+            }
+
+            Candidate newCandidate = _mapper.DtoToCandidate(candidateInfo);
+            _context.Candidates.Add(newCandidate);
+            await _context.SaveChangesAsync();
+
+            return _mapper.CandidateToDto(newCandidate);
         }
 
         public async Task<DtoCandidate> UpdateCandidate(int candidateId, DtoCreateCandidate candidateInfo)
         {
-            var candidate = await _context.Candidates.Where(x => x.CandidateId == candidateId).SingleOrDefaultAsync();
+            var candidate = await _context.Candidates.Where(x => x.CandidateId == candidateId).FirstOrDefaultAsync();
             if (candidate == null)
             {
                 throw new ArgumentException("Candidate not found", nameof(candidateId));
             }
-            else if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
+
+            if (_context.Candidates.Where(x => x.FirstName == candidateInfo.FirstName &&
                                                x.LastName == candidateInfo.LastName &&
                                                x.BirthDate == candidateInfo.BirthDate &&
                                                x.PhoneNumber == candidateInfo.PhoneNumber &&
@@ -88,30 +89,26 @@ namespace HrManagementAPI.Repositories
             {
                 throw new ArgumentException("Candidate with identical data already exists");
             }
-            else
+
+            if (!string.IsNullOrEmpty(candidate.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).FirstOrDefault() != null)
             {
-                if (!string.IsNullOrEmpty(candidate.Email) && _context.Candidates.Where(x => x.Email == candidateInfo.Email).SingleOrDefault() != null)
-                {
-                    throw new ArgumentException("Entered email is already assigned to a candidate");
-                }
-                if (!string.IsNullOrEmpty(candidate.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).SingleOrDefault() != null)
-                {
-                    throw new ArgumentException("Entered phone number is already assigned to a candidate");
-                }
-
-                candidate.FirstName = candidateInfo.FirstName;
-                candidate.LastName = candidateInfo.LastName;
-                candidate.BirthDate = candidateInfo.BirthDate;
-                candidate.PhoneNumber = candidateInfo.PhoneNumber;
-                candidate.Email = candidateInfo.Email;
-                candidate.Status = candidateInfo.Status;
-
-                var rowCount = await _context.SaveChangesAsync();
-                if (rowCount > 0)
-                    return (_mapper.CandidateToDto(candidate));
-                else
-                    throw new DbUpdateException("Unable to update the candidate");
+                throw new ArgumentException("Entered email is already assigned to a candidate");
             }
+            if (!string.IsNullOrEmpty(candidate.PhoneNumber) && _context.Candidates.Where(x => x.PhoneNumber == candidateInfo.PhoneNumber).FirstOrDefault() != null)
+            {
+                throw new ArgumentException("Entered phone number is already assigned to a candidate");
+            }
+
+            candidate.FirstName = candidateInfo.FirstName;
+            candidate.LastName = candidateInfo.LastName;
+            candidate.BirthDate = candidateInfo.BirthDate;
+            candidate.PhoneNumber = candidateInfo.PhoneNumber;
+            candidate.Email = candidateInfo.Email;
+            candidate.Status = candidateInfo.Status;
+
+            var rowCount = await _context.SaveChangesAsync();
+
+            return (_mapper.CandidateToDto(candidate));
         }
 
         public async Task DeleteCandidate(int candidateId)

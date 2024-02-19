@@ -1,8 +1,11 @@
 
+using HrManagementAPI.Middleware;
 using HrManagementAPI.Models;
 using HrManagementAPI.Repositories;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace HrManagementAPI
@@ -41,6 +44,7 @@ namespace HrManagementAPI
 
             app.UseAuthorization();
 
+            app.UseMiddleware<ErrorMiddleware>();
 
             app.MapControllers();
 
