@@ -17,17 +17,14 @@ namespace HrManagementAPI.Services
             _mapper = new Mapper();
         }
 
-        public async Task<List<DtoSubmission>> GetSubmissionsAsync(SubmissionParameters submissionParameters)
+        public async Task<List<DtoSubmission>> GetSubmissionsAsync(int hrId, SubmissionParameters submissionParameters)
         {
-            var submissions = _context.CandidateSubmissions.AsQueryable();
+            var submissions = _context.CandidateSubmissions.Where(x => x.HrId == hrId).AsQueryable();
             if (submissionParameters.CandidateId != null)
                 submissions = submissions.Where(x => x.CandidateId == submissionParameters.CandidateId);
 
             if (submissionParameters.JobPosition != null)
                 submissions = submissions.Where(x => x.JobPosition == submissionParameters.JobPosition);
-
-            if (submissionParameters.HrId != null)
-                submissions = submissions.Where(x => x.HrId == submissionParameters.HrId);
 
             if (!string.IsNullOrEmpty(submissionParameters.PrefferredLocation))
                 submissions = submissions.Where(x => x.PrefferredLocation.Contains(submissionParameters.PrefferredLocation));
@@ -64,6 +61,8 @@ namespace HrManagementAPI.Services
             var submission = await _context.CandidateSubmissions.Where(x => x.SubId == subId).FirstOrDefaultAsync();
             if (submission == null)
                 throw new ArgumentException("Submission not found", nameof(subId));
+            if (submissionInfo.HrId != submission.HrId)
+                throw new ArgumentException("Provided HR manager doesn't have access to the submission");
 
             submission.CandidateId = submissionInfo.CandidateId;
             submission.SubDate = submissionInfo.SubDate;
@@ -76,9 +75,13 @@ namespace HrManagementAPI.Services
             return _mapper.SubmissionToDto(submission);
         }
 
-        public async Task DeleteSubmissionAsync(int subId)
+        public async Task DeleteSubmissionAsync(int subId, int hrId)
         {
-            _context.CandidateSubmissions.Remove(_context.CandidateSubmissions.First(x => x.SubId == subId));
+            var submission = await _context.CandidateSubmissions.FirstAsync(x => x.SubId == subId);
+            if (submission.HrId != hrId)
+                throw new ArgumentException("Provided HR manager doesn't have access to the submission");
+
+            _context.CandidateSubmissions.Remove(submission);
             await _context.SaveChangesAsync();
         }
 

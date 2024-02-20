@@ -6,6 +6,7 @@ using HrManagementAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace HrManagementAPI.Controllers
 {
@@ -18,10 +19,10 @@ namespace HrManagementAPI.Controllers
         public SubmissionController(ISubmissionService submissionService) => _submissionService = submissionService;
 
         [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> GetSubmissions([FromQuery] SubmissionParameters submissionParameters)
+        [Route("hr/{id}")]
+        public async Task<IActionResult> GetSubmissions([FromRoute(Name = "id")] int hrId, [FromQuery] SubmissionParameters submissionParameters)
         {
-            var submissions = await _submissionService.GetSubmissionsAsync(submissionParameters);
+            var submissions = await _submissionService.GetSubmissionsAsync(hrId, submissionParameters);
 
             return Ok(submissions);
         }
@@ -57,9 +58,9 @@ namespace HrManagementAPI.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IActionResult> DeleteSubmission([FromRoute(Name = "id")] int subId)
+        public async Task<IActionResult> DeleteSubmission([FromRoute(Name = "id")] int subId, [FromQuery(Name = "hr-id")][Required] int hrId)
         {
-            await _submissionService.DeleteSubmissionAsync(subId);
+            await _submissionService.DeleteSubmissionAsync(subId, hrId);
 
             return Ok("Submission was deleted");
         }

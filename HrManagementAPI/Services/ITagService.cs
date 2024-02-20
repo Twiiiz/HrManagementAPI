@@ -10,7 +10,7 @@ namespace HrManagementAPI.Services
 
         public Task<DtoTag> AddTagAsync(DtoTagCreate tagInfo);
 
-        public Task<DtoTag> UpdateTagAsync(int tagId, string tagName);
+        public Task<DtoTag> UpdateTagAsync(int tagId, int hrId, string tagName);
 
         public Task DeleteTagAsync(int tagId);
 

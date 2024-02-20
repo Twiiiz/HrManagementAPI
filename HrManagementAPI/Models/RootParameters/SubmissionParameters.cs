@@ -9,7 +9,5 @@ namespace HrManagementAPI.Models.RootParameters
         public string? JobPosition { get; set; }
 
         public string? PrefferredLocation { get; set; }
-
-        public int? HrId { get; set; }
     }
 }

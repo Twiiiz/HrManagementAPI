@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 
 namespace HrManagementAPI.Controllers
@@ -50,9 +51,10 @@ namespace HrManagementAPI.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> ReplaceTag([FromRoute(Name = "id")] int tagId, [FromBody] string tagName)
+        public async Task<IActionResult> ReplaceTag([FromRoute(Name = "id")] int tagId, [FromQuery(Name = "hr-id")][Required] int hrId,
+            [FromQuery(Name = "tag-name")][Required] string tagName)
         {
-            var updTag = await _tagService.UpdateTagAsync(tagId, tagName);
+            var updTag = await _tagService.UpdateTagAsync(tagId, hrId, tagName);
 
             return Ok(updTag);
         }

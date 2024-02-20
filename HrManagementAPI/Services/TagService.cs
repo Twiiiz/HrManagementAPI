@@ -47,12 +47,14 @@ namespace HrManagementAPI.Services
             return _mapper.TagToDto(tag);
         }
 
-        public async Task<DtoTag> UpdateTagAsync(int tagId, string tagName)
+        public async Task<DtoTag> UpdateTagAsync(int tagId, int hrId, string tagName)
         {
             var tag = await _context.Tags.Where(x => x.TagId == tagId).FirstOrDefaultAsync();
             DtoTagCreate tagInfo = new DtoTagCreate { TagName = tagName, HrId = tag.HrId };
             if (!await IsTagUnique(tagInfo))
                 throw new ArgumentException("Tag with identical data already exists");
+            if (hrId != tag.HrId)
+                throw new ArgumentException("Current HR manager doesn't have access to the tag");
 
             tag.TagName = tagName;
             tag.CreationDate = tag.CreationDate;

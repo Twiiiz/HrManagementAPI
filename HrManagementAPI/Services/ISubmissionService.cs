@@ -7,7 +7,7 @@ namespace HrManagementAPI.Services
 {
     public interface ISubmissionService
     {
-        public Task<List<DtoSubmission>> GetSubmissionsAsync(SubmissionParameters submissionParameters);
+        public Task<List<DtoSubmission>> GetSubmissionsAsync(int hrId, SubmissionParameters submissionParameters);
 
         public Task<DtoSubmission> GetSubmissionByIdAsync(int subId);
 
@@ -15,6 +15,6 @@ namespace HrManagementAPI.Services
 
         public Task<DtoSubmission> UpdateSubmissionAsync(int subId, DtoSubmissionCreate updSubmission);
 
-        public Task DeleteSubmissionAsync(int subiId);
+        public Task DeleteSubmissionAsync(int subiId, int hrId);
     }
 }
