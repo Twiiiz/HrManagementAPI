@@ -11,7 +11,5 @@ public partial class JobPosition
 
     public string PositionName { get; set; } = null!;
 
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
-
     public virtual ICollection<JobOpening> JobOpenings { get; set; } = new List<JobOpening>();
 }

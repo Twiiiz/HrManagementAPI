@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace HrManagementAPI.Models;
 
@@ -15,9 +13,9 @@ public partial class Tag
 
     public DateOnly LastUpdateDate { get; set; }
 
-    public int? HrId { get; set; }
+    public int HrId { get; set; }
 
-    public virtual Employee? Hr { get; set; }
-    
+    public virtual HrManager Hr { get; set; } = null!;
+
     public virtual ICollection<TagSubmission> TagSubmissions { get; set; } = new List<TagSubmission>();
 }

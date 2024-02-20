@@ -7,15 +7,6 @@ namespace HrManagementAPI.Models;
 
 public partial class HrManagementContext : DbContext
 {
-    //public HrManagementContext()
-    //{
-    //}
-
-    //public HrManagementContext(DbContextOptions<HrManagementContext> options)
-    //    : base(options)
-    //{
-    //}
-
     private readonly IConfiguration _configuration;
 
     public HrManagementContext(IConfiguration configuration)
@@ -34,9 +25,9 @@ public partial class HrManagementContext : DbContext
 
     public virtual DbSet<CandidateSubmission> CandidateSubmissions { get; set; }
 
-    public virtual DbSet<Employee> Employees { get; set; }
-
     public virtual DbSet<EmployeeSkill> EmployeeSkills { get; set; }
+
+    public virtual DbSet<HrManager> HrManagers { get; set; }
 
     public virtual DbSet<JobOpening> JobOpenings { get; set; }
 
@@ -60,9 +51,9 @@ public partial class HrManagementContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .HasPostgresEnum<CandidateStatus>("candidate_status")
-            .HasPostgresEnum<OpeningStatus>("opening_status")
-            .HasPostgresEnum<PositionType>("position_type");
+            .HasPostgresEnum("candidate_status", new[] { "hired", "not_hired", "offer_made", "offer_denied", "spam" })
+            .HasPostgresEnum("opening_status", new[] { "available", "closed", "offer_under_consideration" })
+            .HasPostgresEnum("position_type", new[] { "developer", "designer", "qa", "data_related", "project_manager", "sys_admin", "support", "hr" });
 
         modelBuilder.Entity<Candidate>(entity =>
         {
@@ -109,41 +100,12 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Candidate).WithMany(p => p.CandidateSubmissions)
                 .HasForeignKey(d => d.CandidateId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("candidate_submissions_candidate_id_fkey");
 
             entity.HasOne(d => d.Hr).WithMany(p => p.CandidateSubmissions)
                 .HasForeignKey(d => d.HrId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("candidate_submissions_hr_id_fkey");
-        });
-
-        modelBuilder.Entity<Employee>(entity =>
-        {
-            entity.HasKey(e => e.EmployeeId).HasName("employees_pkey");
-
-            entity.ToTable("employees");
-
-            entity.Property(e => e.EmployeeId).HasColumnName("employee_id");
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(20)
-                .HasColumnName("first_name");
-            entity.Property(e => e.HireDate).HasColumnName("hire_date");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(35)
-                .HasColumnName("last_name");
-            entity.Property(e => e.MonthlySalary).HasColumnName("monthly_salary");
-            entity.Property(e => e.OfficeId).HasColumnName("office_id");
-            entity.Property(e => e.PositionId).HasColumnName("position_id");
-
-            entity.HasOne(d => d.Office).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.OfficeId)
-                .HasConstraintName("employees_office_id_fkey");
-
-            entity.HasOne(d => d.Position).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.PositionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("employees_position_id_fkey");
         });
 
         modelBuilder.Entity<EmployeeSkill>(entity =>
@@ -164,6 +126,30 @@ public partial class HrManagementContext : DbContext
                 .HasConstraintName("employee_skills_employee_id_fkey");
         });
 
+        modelBuilder.Entity<HrManager>(entity =>
+        {
+            entity.HasKey(e => e.HrId).HasName("employees_pkey");
+
+            entity.ToTable("hr_managers");
+
+            entity.Property(e => e.HrId)
+                .HasDefaultValueSql("nextval('employees_employee_id_seq'::regclass)")
+                .HasColumnName("hr_id");
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(20)
+                .HasColumnName("first_name");
+            entity.Property(e => e.HireDate).HasColumnName("hire_date");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(35)
+                .HasColumnName("last_name");
+            entity.Property(e => e.MonthlySalary).HasColumnName("monthly_salary");
+            entity.Property(e => e.OfficeId).HasColumnName("office_id");
+
+            entity.HasOne(d => d.Office).WithMany(p => p.HrManagers)
+                .HasForeignKey(d => d.OfficeId)
+                .HasConstraintName("employees_office_id_fkey");
+        });
+
         modelBuilder.Entity<JobOpening>(entity =>
         {
             entity.HasKey(e => e.OpeningId).HasName("job_openings_pkey");
@@ -182,6 +168,7 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.HiredCandidateNavigation).WithMany(p => p.JobOpenings)
                 .HasForeignKey(d => d.HiredCandidate)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("job_openings_hired_candidate_fkey");
 
             entity.HasOne(d => d.Office).WithMany(p => p.JobOpenings)
@@ -222,7 +209,6 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Sub).WithMany(p => p.Notes)
                 .HasForeignKey(d => d.SubId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("notes_sub_id_fkey");
         });
 
@@ -253,7 +239,6 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Sub).WithMany(p => p.SubmissionSkills)
                 .HasForeignKey(d => d.SubId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("submission_skills_sub_id_fkey");
         });
 
@@ -272,7 +257,6 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Sub).WithMany(p => p.SubmissionStatuses)
                 .HasForeignKey(d => d.SubId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("submission_statuses_sub_id_fkey");
         });
 
@@ -292,6 +276,7 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Hr).WithMany(p => p.Tags)
                 .HasForeignKey(d => d.HrId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tags_hr_id_fkey");
         });
 
@@ -307,12 +292,10 @@ public partial class HrManagementContext : DbContext
 
             entity.HasOne(d => d.Sub).WithMany(p => p.TagSubmissions)
                 .HasForeignKey(d => d.SubId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tag_submissions_sub_id_fkey");
 
             entity.HasOne(d => d.Tag).WithMany(p => p.TagSubmissions)
                 .HasForeignKey(d => d.TagId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tag_submissions_tag_id_fkey");
         });
 

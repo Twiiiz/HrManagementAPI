@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace HrManagementAPI.Models;
 
@@ -14,5 +13,5 @@ public partial class EmployeeSkill
 
     public string? Description { get; set; }
 
-    public virtual Employee? Employee { get; set; }
+    public virtual HrManager? Employee { get; set; }
 }

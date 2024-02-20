@@ -1,4 +1,6 @@
-﻿using HrManagementAPI.Models;
+﻿using HrManagementAPI.DTOs;
+using HrManagementAPI.Models;
+using HrManagementAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,89 +13,84 @@ namespace HrManagementAPI.Controllers
     [ApiController]
     public class TagController : ControllerBase
     {
-        private readonly HrManagementContext _context;
+        private readonly ITagService _tagService;
 
-        public TagController(HrManagementContext context) => _context = context;
+        public TagController(ITagService tagService) => _tagService = tagService;
 
-        private Tag? GetTagHelper(int hr_id, int tag_id)
-        {
-            var tags = _context.Tags
-                .Include(t => t.TagSubmissions)
-                .Where(x => x.HrId == hr_id).AsQueryable();
-
-            var tag = tags
-                .Where(x => x.TagId == tag_id)
-                .FirstOrDefault();
-
-            return tag;
-        }
-        
         [HttpGet]
-        [Route("{hr_id}")]
-        public async Task<IActionResult> GetTags([FromRoute] int hr_id)
+        [Route("hr/{id}")]
+        public async Task<IActionResult> GetTags([FromRoute(Name = "id")] int hrId)
         {
-            var tags = await _context.Tags
-                .Include(t => t.TagSubmissions)
-                .Where(x => x.HrId == hr_id)
-                .AsQueryable()
-                .ToListAsync();
-
+            var tags = await _tagService.GetTagsAsync(hrId);
             if (!tags.Any())
-                return NoContent();
+                return NotFound("Current HR manager doesn't have any tags yet");
 
             return Ok(tags);
         }
 
         [HttpGet]
-        [Route("{hr_id}/{tag_id}")]
-        public async Task<IActionResult> GetTag([FromRoute] int hr_id, [FromRoute] int tag_id)
+        [Route("{id}")]
+        public async Task<IActionResult> GetTag([FromRoute(Name = "id")] int tagId)
         {
-            var tags = _context.Tags.Where(x => x.HrId == hr_id).AsQueryable();
-            if (!tags.Any())
-                return NotFound("Provided Hr Manager doesn't have any tags created");
-
-            var tag = await tags
-                .Where(x => x.TagId == tag_id)
-                .FirstOrDefaultAsync();
+            var tag = await _tagService.GetTagAsync(tagId);
             if (tag == null)
-            {
-                return NotFound("Requested tag for provided Hr Manager was not found");
-            }
+                return NotFound("Requested tag doesn't exist");
 
             return Ok(tag);
         }
 
-        [HttpGet]
-        [Route("{hr_id}/{tag_id}/submissions")]
-        public async Task<IActionResult> GetTagSubmissions([FromRoute] int hr_id, [FromRoute] int tag_id)
+        [HttpPost]
+        [Route("")]
+        public async Task<IActionResult> CreateTag([FromBody] DtoTagCreate tagInfo)
         {
-            var tag = GetTagHelper(hr_id, tag_id);
-            if (tag != null)
-            {
-                var tag_submissions = await _context.TagSubmissions
-                    .Include(s => s.Tag)
-                    .Include(s => s.Sub)
-                    .Where(x => x.TagId == tag.TagId)
-                    .ToListAsync();
-                if (!tag_submissions.Any())
-                    return NoContent();
+            var newTag = await _tagService.AddTagAsync(tagInfo);
 
-                return Ok(tag_submissions);
-            }
-            else return BadRequest("Provided submission was not found for provided Hr Manager");
+            return CreatedAtAction(nameof(GetTag), new { id = newTag.TagId }, newTag);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> ReplaceTag([FromRoute(Name = "id")] int tagId, [FromBody] string tagName)
+        {
+            var updTag = await _tagService.UpdateTagAsync(tagId, tagName);
+
+            return Ok(updTag);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteTag([FromRoute(Name = "id")] int tagId)
+        {
+            await _tagService.DeleteTagAsync(tagId);
+
+            return Ok("Tag was deleted");
+        }
+
+        [HttpGet]
+        [Route("{id}/tag-submissions")]
+        public async Task<IActionResult> GetSubmissionsOfTag([FromRoute(Name = "id")] int tagId)
+        {
+            var tagSubmissions = await _tagService.GetTagSubmissionsAsync(tagId);
+
+            return Ok(tagSubmissions);
         }
 
         [HttpPost]
-        [Route("add")]
-        public async Task<IActionResult> CreateTag([FromBody] Tag new_tag)
+        [Route("hr/{id}/tag-submissions")]
+        public async Task<IActionResult> CreateTagSubmission([FromRoute(Name = "id")] int hrId, [FromBody] DtoTagSubmissionCreate tagSubmissionInfo)
         {
-            new_tag.TagId = default;
-            new_tag.CreationDate = DateOnly.FromDateTime(DateTime.Now);
-            new_tag.LastUpdateDate = DateOnly.FromDateTime(DateTime.Now);
+            var newTagSubmission = await _tagService.AddTagSubmissionAsync(hrId, tagSubmissionInfo);
 
-            _context.Tags.Add(new_tag);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(CreateTag), new_tag);
+            return CreatedAtAction(nameof(GetTag), new { id = newTagSubmission.SubTagId }, newTagSubmission);
+        }
+
+        [HttpDelete]
+        [Route("hr/{hr-id}/tag-submissions/{sub-tag-id}")]
+        public async Task<IActionResult> DeleteTagSubmission([FromRoute(Name = "hr-id")] int hrId, [FromRoute(Name = "sub-tag-id")] int tagSubmissionId)
+        {
+            await _tagService.DeleteTagSubmissionAsync(hrId, tagSubmissionId);
+
+            return Ok("Relation between submission and a tag was deleted");
         }
     }
 }

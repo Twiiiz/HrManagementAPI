@@ -2,16 +2,16 @@
 {
     public class DtoSubmissionCreate
     {
-        public string JobPosition { get; set; } = string.Empty;
+        public required string JobPosition { get; set; }
 
-        public DateOnly SubDate { get; set; }
+        public required DateOnly SubDate { get; set; }
 
-        public int CandidateId { get; set; }
+        public required int CandidateId { get; set; }
 
-        public int HrId { get; set; }
+        public required int HrId { get; set; }
 
-        public string CvFilepath { get; set; } = string.Empty;
+        public required string CvFilepath { get; set; }
 
-        public string[] PrefferredLocation { get; set; } = null!;
+        public required string[] PrefferredLocation { get; set; } = null!;
     }
 }

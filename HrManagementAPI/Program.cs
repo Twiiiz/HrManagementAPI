@@ -20,6 +20,7 @@ namespace HrManagementAPI
             // Add services to the container.
             builder.Services.AddScoped<ICandidateService, CandidateService>();
             builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+            builder.Services.AddScoped<ITagService, TagService>();
 
             //builder.Services.AddControllers();
             builder.Services.AddControllers().AddJsonOptions(options =>

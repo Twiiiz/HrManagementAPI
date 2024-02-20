@@ -59,7 +59,50 @@ namespace HrManagementAPI.Mappers
                 JobPosition = submission.JobPosition,
                 CvFilepath = submission.CvFilepath,
                 HrId = submission.HrId,
-                PrefferredLocation= submission.PrefferredLocation
+                PrefferredLocation = submission.PrefferredLocation
+            };
+        }
+
+        public Tag DtoToTag(DtoTagCreate tagInfo)
+        {
+            return new Tag
+            {
+                TagId = default,
+                TagName = tagInfo.TagName,
+                HrId = tagInfo.HrId,
+                LastUpdateDate = DateOnly.FromDateTime(DateTime.Today)
+            };
+        }
+
+        public DtoTag TagToDto(Tag tag)
+        {
+            return new DtoTag
+            {
+                TagId = tag.TagId,
+                TagName = tag.TagName,
+                HrId = tag.HrId,
+                CreationDate = tag.CreationDate,
+                LastUpdateDate = tag.LastUpdateDate
+            };
+        }
+
+        public DtoTagSubmission TagSubmissionToDto(TagSubmission tagSubmission)
+        {
+            return new DtoTagSubmission
+            {
+                SubTagId = tagSubmission.SubTagId,
+                TagId = tagSubmission.TagId,
+                SubId = tagSubmission.SubId
+            };
+        }
+
+        public TagSubmission DtoToTagSubmission(DtoTagSubmissionCreate tagSubmissionInfo)
+        {
+            return new TagSubmission
+            {
+                SubTagId = default,
+                TagId = tagSubmissionInfo.TagId,
+                SubId = tagSubmissionInfo.SubId
             };
         }
     }

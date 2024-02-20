@@ -69,10 +69,6 @@ namespace HrManagementAPI.Repositories
         public async Task<DtoCandidate> UpdateCandidateAsync(int candidateId, DtoCandidateCreate candidateInfo)
         {
             var candidate = await _context.Candidates.Where(x => x.CandidateId == candidateId).FirstOrDefaultAsync();
-            if (candidate == null)
-            {
-                throw new ArgumentException("Candidate not found", nameof(candidateId));
-            }
 
             if (!await IsUnique(candidateInfo))
             {
