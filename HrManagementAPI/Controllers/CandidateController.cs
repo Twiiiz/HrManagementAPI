@@ -49,7 +49,8 @@ namespace HrManagementAPI.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> ReplaceCandidate([FromRoute(Name = "id")] int candidateId, [FromBody] DtoCandidateCreate replacement)
+        public async Task<IActionResult> ReplaceCandidate([FromRoute(Name = "id")] int candidateId,
+            [FromBody] DtoCandidateCreate replacement)
         {
             var updCandidate = await _candidateService.UpdateCandidateAsync(candidateId, replacement);
 

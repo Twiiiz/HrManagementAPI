@@ -29,14 +29,14 @@ namespace HrManagementAPI.Services
             if (!string.IsNullOrEmpty(submissionParameters.PrefferredLocation))
                 submissions = submissions.Where(x => x.PrefferredLocation.Contains(submissionParameters.PrefferredLocation));
 
-            return await submissions.Select(x => _mapper.SubmissionToDto(x)).ToListAsync();
+            return await submissions.Select(x => _mapper.EntityToDto(x)).ToListAsync();
         }
         
         public async Task<DtoSubmission> GetSubmissionByIdAsync(int subId)
         {
             return await _context.CandidateSubmissions
                 .Where(x => x.SubId == subId)
-                .Select(x => _mapper.SubmissionToDto(x))
+                .Select(x => _mapper.EntityToDto(x))
                 .AsQueryable()
                 .FirstOrDefaultAsync();
         }
@@ -46,11 +46,11 @@ namespace HrManagementAPI.Services
             if (!await IsUnique(submissionInfo))
                 throw new ArgumentException("Submission With identical data already exists");
             
-            CandidateSubmission submission = _mapper.DtoToSubmission(submissionInfo);
+            CandidateSubmission submission = _mapper.DtoToEntity(submissionInfo);
             _context.CandidateSubmissions.Add(submission);
             await _context.SaveChangesAsync();
 
-            return _mapper.SubmissionToDto(submission);
+            return _mapper.EntityToDto(submission);
         }
 
         public async Task<DtoSubmission> UpdateSubmissionAsync(int subId, DtoSubmissionCreate submissionInfo)
@@ -72,7 +72,7 @@ namespace HrManagementAPI.Services
             submissionInfo.PrefferredLocation = submissionInfo.PrefferredLocation;
             await _context.SaveChangesAsync();
 
-            return _mapper.SubmissionToDto(submission);
+            return _mapper.EntityToDto(submission);
         }
 
         public async Task DeleteSubmissionAsync(int subId, int hrId)

@@ -7,7 +7,7 @@ namespace HrManagementAPI.Mappers
 {
     public class Mapper
     {
-        public Candidate DtoToCandidate(DtoCandidateCreate candidateInfo)
+        public Candidate DtoToEntity(DtoCandidateCreate candidateInfo)
         {
             return new Candidate
             {
@@ -21,7 +21,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public DtoCandidate CandidateToDto(Candidate candidate)
+        public DtoCandidate EntityToDto(Candidate candidate)
         {
             return new DtoCandidate
             {
@@ -35,7 +35,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public CandidateSubmission DtoToSubmission(DtoSubmissionCreate submissionInfo)
+        public CandidateSubmission DtoToEntity(DtoSubmissionCreate submissionInfo)
         {
             return new CandidateSubmission
             {
@@ -49,7 +49,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public DtoSubmission SubmissionToDto(CandidateSubmission submission)
+        public DtoSubmission EntityToDto(CandidateSubmission submission)
         {
             return new DtoSubmission
             {
@@ -63,7 +63,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public Tag DtoToTag(DtoTagCreate tagInfo)
+        public Tag DtoToEntity(DtoTagCreate tagInfo)
         {
             return new Tag
             {
@@ -74,7 +74,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public DtoTag TagToDto(Tag tag)
+        public DtoTag EntityToDto(Tag tag)
         {
             return new DtoTag
             {
@@ -86,7 +86,7 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public DtoTagSubmission TagSubmissionToDto(TagSubmission tagSubmission)
+        public DtoTagSubmission EntityToDto(TagSubmission tagSubmission)
         {
             return new DtoTagSubmission
             {
@@ -96,13 +96,35 @@ namespace HrManagementAPI.Mappers
             };
         }
 
-        public TagSubmission DtoToTagSubmission(DtoTagSubmissionCreate tagSubmissionInfo)
+        public TagSubmission DtoToEntity(DtoTagSubmissionCreate tagSubmissionInfo)
         {
             return new TagSubmission
             {
                 SubTagId = default,
                 TagId = tagSubmissionInfo.TagId,
                 SubId = tagSubmissionInfo.SubId
+            };
+        }
+
+        public SubmissionStatus DtoToEntity(DtoSubmissionStatusCreate submissionStatusInfo, int subId)
+        {
+            return new SubmissionStatus
+            {
+                SubStatId = default,
+                SubId = subId,
+                StatusName = submissionStatusInfo.StatusName,
+                StatusDate = submissionStatusInfo.StatusDate
+            };
+        }
+
+        public DtoSubmissionStatus EntityToDto(SubmissionStatus submissionStatus)
+        {
+            return new DtoSubmissionStatus
+            {
+                SubStatId = submissionStatus.SubStatId,
+                SubId = submissionStatus.SubId,
+                StatusName = submissionStatus.StatusName,
+                StatusDate = submissionStatus.StatusDate
             };
         }
     }

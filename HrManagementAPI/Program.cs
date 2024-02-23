@@ -6,6 +6,7 @@ using HrManagementAPI.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Net;
 using System.Text.Json.Serialization;
 
@@ -21,6 +22,7 @@ namespace HrManagementAPI
             builder.Services.AddScoped<ICandidateService, CandidateService>();
             builder.Services.AddScoped<ISubmissionService, SubmissionService>();
             builder.Services.AddScoped<ITagService, TagService>();
+            builder.Services.AddScoped<ISubmissionStatusService, SubmissionStatusService>();
 
             //builder.Services.AddControllers();
             builder.Services.AddControllers().AddJsonOptions(options =>
@@ -30,7 +32,13 @@ namespace HrManagementAPI
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "REST API"
+                });
+            });
             builder.Services.AddDbContext<HrManagementContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

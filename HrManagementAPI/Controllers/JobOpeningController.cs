@@ -56,13 +56,13 @@ namespace HrManagementAPI.Controllers
 
         ///////////////
         [HttpGet]
-        [Route("{opening_id}")]
-        public async Task<IActionResult> GetJobOpening([FromRoute] int hr_id, [FromRoute] int opening_id)
+        [Route("{id}")]
+        public async Task<IActionResult> GetJobOpening([FromRoute(Name = "id")] int openingId)
         {
             var jobOpenings = _context.JobOpenings
                 .Include(c => c.Position)
                 .Include(c => c.Office)
-                .Where(x => x.OpeningId == opening_id).AsQueryable();
+                .Where(x => x.OpeningId == openingId).AsQueryable();
             if (!jobOpenings.Any())
             {
                 return NotFound("Requested job opening was not found");
@@ -74,12 +74,26 @@ namespace HrManagementAPI.Controllers
         }
 
         [HttpPost]
-        [Route("add")]
-        public async Task<IActionResult> CreateJobOpening([FromBody] JobOpening new_opening)
+        [Route("")]
+        public async Task<IActionResult> CreateJobOpening([FromBody] JobOpening newOpening)
         {
-            _context.JobOpenings.Add(new_opening);
+            _context.JobOpenings.Add(newOpening);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(CreateJobOpening), new_opening);
+            return CreatedAtAction(nameof(CreateJobOpening), newOpening);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> ReplaceJobOpening([FromRoute(Name = "id")] int jobOpeningId)
+        {
+            return Ok(1);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteJobOpening([FromRoute(Name = "id")] int jobOpeningId)
+        {
+            return Ok(1);
         }
     }
 }
