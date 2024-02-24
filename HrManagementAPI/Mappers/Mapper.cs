@@ -127,5 +127,32 @@ namespace HrManagementAPI.Mappers
                 StatusDate = submissionStatus.StatusDate
             };
         }
+
+        public DtoJobOpening EntityToDto(JobOpening jobOpening)
+        {
+            return new DtoJobOpening
+            {
+                OpeningId = jobOpening.OpeningId,
+                OfficeId = jobOpening.OfficeId,
+                PositionId = jobOpening.PositionId,
+                OpeningDate = jobOpening.OpeningDate,
+                LastUpdateDate = jobOpening.LastUpdateDate,
+                Status = jobOpening.Status,
+                HiredCandidate = jobOpening.HiredCandidate
+            };
+        }
+
+        public JobOpening DtoToEntity(DtoJobOpeningCreate jobOpeningInfo)
+        {
+            return new JobOpening
+            {
+                OpeningId = default,
+                OfficeId = jobOpeningInfo.OfficeId,
+                PositionId = jobOpeningInfo.PositionId,
+                LastUpdateDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = jobOpeningInfo.Status,
+                HiredCandidate = jobOpeningInfo.HiredCandidate
+            };
+        }
     }
 }

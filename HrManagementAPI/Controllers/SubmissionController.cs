@@ -20,9 +20,9 @@ namespace HrManagementAPI.Controllers
 
         [HttpGet]
         [Route("hr/{id}")]
-        public async Task<IActionResult> GetSubmissions([FromRoute(Name = "id")] int hrId, [FromQuery] SubmissionParameters submissionParameters)
+        public async Task<IActionResult> GetSubmissions([FromRoute(Name = "id")] int hrId, [FromQuery] SubmissionParameters parameters)
         {
-            var submissions = await _submissionService.GetSubmissionsAsync(hrId, submissionParameters);
+            var submissions = await _submissionService.GetSubmissionsAsync(hrId, parameters);
 
             return Ok(submissions);
         }

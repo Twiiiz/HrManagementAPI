@@ -1,4 +1,7 @@
-﻿using HrManagementAPI.Models;
+﻿using HrManagementAPI.DTOs;
+using HrManagementAPI.Models;
+using HrManagementAPI.Models.RootParameters;
+using HrManagementAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,91 +12,56 @@ namespace HrManagementAPI.Controllers
     [ApiController]
     public class JobOpeningController : ControllerBase
     {
-        private readonly HrManagementContext _context;
+        private readonly IJobOpeningService _jobOpeningService;
 
-        public JobOpeningController(HrManagementContext context) => _context = context;
+        public JobOpeningController(IJobOpeningService jobOpeningService)
+        {
+            _jobOpeningService = jobOpeningService;
+        }
 
         [HttpGet]
         [Route("")]
-        public async Task<IActionResult> GetJobOpenings([FromQuery] string? status)
+        public async Task<IActionResult> GetJobOpenings([FromQuery] JobOpeningParameters parameters)
         {
-            var jobOpenings = _context.JobOpenings
-                        .Include(c => c.Position)
-                        .Include(c => c.Office)
-                        .AsQueryable();
-            var output = jobOpenings;
+            var jobOpenings = await _jobOpeningService.GetJobOpeningsAsync(parameters);
 
-            if (!string.IsNullOrEmpty(status))
-            {
-                status = status.ToLower();
-                
-                switch (status)
-                {
-                    case "available":
-                        output = jobOpenings.Where(x => x.Status == OpeningStatus.available);
-                        if (!output.Any())
-                            return NoContent();
-                        break;
-
-                    case "closed":
-                        output = jobOpenings.Where(x => x.Status == OpeningStatus.closed);
-                        if (!output.Any())
-                            return NoContent();
-
-                        break;
-
-                    case "offer_under_consideration":
-                        output = jobOpenings.Where(x => x.Status == OpeningStatus.offer_under_consideration);
-                        if (!output.Any())
-                            return NoContent();
-
-                        break;
-                }
-            }
-
-            return Ok(await output.ToListAsync());
+            return Ok(jobOpenings);
         }
 
-        ///////////////
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetJobOpening([FromRoute(Name = "id")] int openingId)
         {
-            var jobOpenings = _context.JobOpenings
-                .Include(c => c.Position)
-                .Include(c => c.Office)
-                .Where(x => x.OpeningId == openingId).AsQueryable();
-            if (!jobOpenings.Any())
-            {
-                return NotFound("Requested job opening was not found");
-            }
+            var jobOpening = await _jobOpeningService.GetJobOpeningByIdAsync(openingId);
 
-            var output = await jobOpenings.FirstOrDefaultAsync();
-
-            return Ok(output);
+            return Ok(jobOpening);
         }
 
         [HttpPost]
         [Route("")]
-        public async Task<IActionResult> CreateJobOpening([FromBody] JobOpening newOpening)
+        public async Task<IActionResult> CreateJobOpening([FromBody] DtoJobOpeningCreate jobOpeningInfo)
         {
-            _context.JobOpenings.Add(newOpening);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(CreateJobOpening), newOpening);
+            var jobOpening = await _jobOpeningService.AddJobOpeningAsync(jobOpeningInfo);
+
+            return CreatedAtAction(nameof(GetJobOpening), new { id = jobOpening.OpeningId }, jobOpening);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> ReplaceJobOpening([FromRoute(Name = "id")] int jobOpeningId)
+        public async Task<IActionResult> ReplaceJobOpening([FromRoute(Name = "id")] int jobOpeningId, [FromBody] DtoJobOpeningCreate jobOpeningInfo)
         {
-            return Ok(1);
+            var jobOpening = await _jobOpeningService.UpdateJobOpeningAsync(jobOpeningId, jobOpeningInfo);
+
+            return Ok(jobOpening);
         }
 
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> DeleteJobOpening([FromRoute(Name = "id")] int jobOpeningId)
         {
-            return Ok(1);
+            await _jobOpeningService.DeleteJobOpeningAsync(jobOpeningId);
+
+            return Ok("Job opening was deleted");
         }
     }
 }

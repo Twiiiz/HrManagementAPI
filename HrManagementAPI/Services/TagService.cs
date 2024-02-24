@@ -108,6 +108,11 @@ namespace HrManagementAPI.Services
             if (!await IsTagSubmissionUnique(tagSubmissionInfo))
                 throw new ArgumentException("Current submission is already assigned to current tag");
 
+            var tagReal = await _context.Tags.Where(x => x.TagId == tagSubmissionInfo.TagId).FirstOrDefaultAsync();
+            if (tagReal == null)
+                throw new ArgumentException("Provided tag doesn't exist");
+
+            tagReal.LastUpdateDate = DateOnly.FromDateTime(DateTime.Today);
             var tagSubmission = _mapper.DtoToEntity(tagSubmissionInfo);
             _context.TagSubmissions.Add(tagSubmission);
             await _context.SaveChangesAsync();
@@ -127,7 +132,8 @@ namespace HrManagementAPI.Services
 
         private async Task<bool> IsTagSubmissionUnique(DtoTagSubmissionCreate tagSubmissionInfo)
         {
-            var tagSubmission = await _context.TagSubmissions.Where(x => x.TagId == tagSubmissionInfo.TagId).FirstOrDefaultAsync();
+            var tagSubmission = await _context.TagSubmissions.Where(x => x.TagId == tagSubmissionInfo.TagId &&
+                                                              x.SubId == tagSubmissionInfo.SubId).FirstOrDefaultAsync();
             if (tagSubmission != null)
                 return false;
 
