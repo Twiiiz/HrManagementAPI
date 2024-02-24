@@ -101,18 +101,15 @@ namespace HrManagementAPI.Services
             if (submission != null)
                 throw new ArgumentException("Current HR manager doesn't have access to the candidate submission");
 
-            var tag = await _context.Tags.Where(x => x.TagId == tagSubmissionInfo.TagId && x.HrId != hrId).FirstOrDefaultAsync();
-            if (tag != null)
+            var tag = await _context.Tags.Where(x => x.TagId == tagSubmissionInfo.TagId).FirstOrDefaultAsync();
+
+            if (tag.HrId != hrId)
                 throw new ArgumentException("Current HR manager doesn't have access to the tag");
             
             if (!await IsTagSubmissionUnique(tagSubmissionInfo))
                 throw new ArgumentException("Current submission is already assigned to current tag");
 
-            var tagReal = await _context.Tags.Where(x => x.TagId == tagSubmissionInfo.TagId).FirstOrDefaultAsync();
-            if (tagReal == null)
-                throw new ArgumentException("Provided tag doesn't exist");
-
-            tagReal.LastUpdateDate = DateOnly.FromDateTime(DateTime.Today);
+            tag.LastUpdateDate = DateOnly.FromDateTime(DateTime.Today);
             var tagSubmission = _mapper.DtoToEntity(tagSubmissionInfo);
             _context.TagSubmissions.Add(tagSubmission);
             await _context.SaveChangesAsync();
