@@ -24,6 +24,7 @@ namespace HrManagementAPI
             builder.Services.AddScoped<ITagService, TagService>();
             builder.Services.AddScoped<ISubmissionStatusService, SubmissionStatusService>();
             builder.Services.AddScoped<IJobOpeningService, JobOpeningService>();
+            builder.Services.AddScoped<INoteService, NoteService>();
 
             //builder.Services.AddControllers();
             builder.Services.AddControllers().AddJsonOptions(options =>

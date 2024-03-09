@@ -11,7 +11,7 @@ namespace HrManagementAPI.Services
 
         public Task<DtoSubmissionStatus> AddSubmissionStatusAsync(int subId, DtoSubmissionStatusCreate submissionStatusInfo);
 
-        public Task<DtoSubmissionStatus> UpdateSubmissionStatusAsync(int subId, int subStatId, DtoSubmissionStatusCreate submissionStatusInfo);
+        public Task<DtoSubmissionStatus> UpdateSubmissionStatusAsync(int subId, int subStatId, int hrId, DtoSubmissionStatusCreate submissionStatusInfo);
 
         public Task DeleteSubmissionStatusAsync(int subId, int subStatId, int hrId);
     }

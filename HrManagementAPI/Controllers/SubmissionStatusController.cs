@@ -41,15 +41,15 @@ namespace HrManagementAPI.Controllers
         {
             var submissionStatus = await _submissionStatusService.AddSubmissionStatusAsync(subId, submissionStatusInfo);
 
-            return CreatedAtAction(nameof(GetSubmissionStatus), new { id = submissionStatus.SubStatId }, submissionStatus);
+            return CreatedAtAction(nameof(GetSubmissionStatus), new RouteValueDictionary { { "sub-id", subId}, { "id", submissionStatus.SubStatId} }, submissionStatus);
         }
 
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> ReplaceSubmissionStatus([FromRoute(Name = "sub-id")] int subId,
-            [FromRoute(Name = "id")] int subStatId, [FromBody] DtoSubmissionStatusCreate submissionStatusInfo)
+            [FromRoute(Name = "id")] int subStatId, [FromQuery][Required] int hrId, [FromBody] DtoSubmissionStatusCreate submissionStatusInfo)
         {
-            var submissionStatus = await _submissionStatusService.UpdateSubmissionStatusAsync(subId, subStatId, submissionStatusInfo);
+            var submissionStatus = await _submissionStatusService.UpdateSubmissionStatusAsync(subId, subStatId, hrId, submissionStatusInfo);
 
             return Ok(submissionStatus);
         }

@@ -18,9 +18,10 @@ namespace HrManagementAPI.Services
 
         public async Task<List<DtoSubmissionStatus>> GetSubmissionStatusesAsync(int subId, int hrId)
         {
-            var submission = await GetSubByIdAsync(subId, hrId);
+            if (!await HasPermission(subId, hrId))
+                throw new ArgumentException("Current HR manager doesn't have access to the requested submission");
 
-            return await _context.SubmissionStatuses.Where(x => x.SubId ==  submission.SubId).Select(x => _mapper.EntityToDto(x)).ToListAsync();
+            return await _context.SubmissionStatuses.Where(x => x.SubId ==  subId).Select(x => _mapper.EntityToDto(x)).ToListAsync();
         }
 
         public async Task<DtoSubmissionStatus> GetSubmissionStatusByIdAsync(int subId, int subStatId)
@@ -43,48 +44,50 @@ namespace HrManagementAPI.Services
 
             SubmissionStatus submissionStatus = _mapper.DtoToEntity(submissionStatusInfo, subId);
             _context.SubmissionStatuses.Add(submissionStatus);
+            await _context.SaveChangesAsync();
 
             return _mapper.EntityToDto(submissionStatus);
         }
 
-        public async Task<DtoSubmissionStatus> UpdateSubmissionStatusAsync(int subId, int subStatId, DtoSubmissionStatusCreate submissionStatusInfo)
+        public async Task<DtoSubmissionStatus> UpdateSubmissionStatusAsync(int subId, int subStatId, int hrId, DtoSubmissionStatusCreate submissionStatusInfo)
         {
+            if (!await HasPermission(subId, hrId))
+                throw new ArgumentException("Current HR manager doesn't have access to the requested submission");
+
             if (!await IsUnique(subStatId, submissionStatusInfo))
                 throw new ArgumentException("Identical status already exists");
 
-            var submissionStatus = _mapper.DtoToEntity(submissionStatusInfo, subId);
-            _context.SubmissionStatuses.Add(submissionStatus);
+            var submissionStatus = await _context.SubmissionStatuses.Where(x => x.SubStatId == subStatId).FirstOrDefaultAsync();
+            submissionStatus.SubId = subId;
+            submissionStatus.StatusName = submissionStatusInfo.StatusName;
+            submissionStatus.StatusDate = submissionStatusInfo.StatusDate;
+
             await _context.SaveChangesAsync();
             return _mapper.EntityToDto(submissionStatus);
         }
 
         public async Task DeleteSubmissionStatusAsync(int subId, int subStatId, int hrId)
         {
-            var submission = GetSubByIdAsync(subId, hrId);
-            var dtoSubmissionStatus = await GetSubmissionStatusByIdAsync(subId, subStatId);
-            if (dtoSubmissionStatus == null)
-                throw new ArgumentException("Unable to find requested status for provided submission");
-            var submissionStatus = new SubmissionStatus
-            {
-                SubStatId = dtoSubmissionStatus.SubStatId,
-                SubId = dtoSubmissionStatus.SubId,
-                StatusName = dtoSubmissionStatus.StatusName,
-                StatusDate = dtoSubmissionStatus.StatusDate
-            };
+            if(!await HasPermission(subId, hrId))
+                throw new ArgumentException("Current HR manager doesn't have access to the requested submission");
+
+            var submissionStatus = _context.SubmissionStatuses.Where(x => x.SubStatId == subStatId).First();
+            if (submissionStatus == null)
+                throw new ArgumentException("Unable to find requested submission status");
 
             _context.SubmissionStatuses.Remove(submissionStatus);
             await _context.SaveChangesAsync();
         }
-        
-        private async Task<CandidateSubmission> GetSubByIdAsync(int subId, int hrId)
+
+        private async Task<bool> HasPermission(int subId, int hrId)
         {
             var submission = await _context.CandidateSubmissions.Where(x => x.SubId == subId).FirstOrDefaultAsync();
             if (submission == null)
                 throw new ArgumentException("Unable to find requested submission");
             if (submission.HrId != hrId)
-                throw new ArgumentException("Current HR manager doesn't have access to the requested submission");
+                return false;
 
-            return submission;
+            return true;
         }
 
         private async Task<bool> IsUnique(int subId, DtoSubmissionStatusCreate submissionStatusInfo)

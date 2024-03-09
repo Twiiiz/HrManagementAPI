@@ -54,7 +54,6 @@ namespace HrManagementAPI.Services
         public async Task<DtoJobOpening> AddJobOpeningAsync(DtoJobOpeningCreate jobOpeningInfo)
         {
             var jobOpening = _mapper.DtoToEntity(jobOpeningInfo);
-            jobOpening.OpeningDate = DateOnly.FromDateTime(DateTime.Today);
             _context.JobOpenings.Add(jobOpening);
             await _context.SaveChangesAsync();
 

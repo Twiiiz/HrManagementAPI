@@ -2,8 +2,8 @@
 {
     public class DtoTagSubmissionCreate
     {
-        public int TagId { get; set; }
+        public required int TagId { get; set; }
 
-        public int SubId { get; set; }
+        public required int SubId { get; set; }
     }
 }
